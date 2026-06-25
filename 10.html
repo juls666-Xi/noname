@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mean, Median, Mode Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #e6f0f5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 40px 36px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 30px 50px rgba(0, 20, 30, 0.15),
+                        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            transition: 0.2s;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0b2a3b;
+            margin-top: 0;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #3a6a7a;
+            background: #ddeef6;
+            padding: 2px 14px;
+            border-radius: 40px;
+        }
+        .sub {
+            color: #2b5a6a;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+            border-left: 4px solid #6ab0c9;
+            padding-left: 16px;
+        }
+        label {
+            font-weight: 500;
+            color: #0f3b4a;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .input-area {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        textarea {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border: 2px solid #cfe0e8;
+            border-radius: 24px;
+            font-size: 1rem;
+            background: white;
+            resize: vertical;
+            transition: 0.2s;
+            line-height: 1.5;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #3d98b5;
+            box-shadow: 0 0 0 4px rgba(61, 152, 181, 0.15);
+        }
+        .btn {
+            background: #0f3b4a;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s;
+            white-space: nowrap;
+            align-self: flex-end;
+            box-shadow: 0 6px 0 #08222b;
+        }
+        .btn:hover {
+            background: #1a5063;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #08222b;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #08222b;
+        }
+        .hint {
+            font-size: 0.8rem;
+            color: #3f6f7f;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+        .results {
+            margin-top: 32px;
+            background: #eef7fb;
+            border-radius: 28px;
+            padding: 24px 28px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            border: 1px solid #d0e5ef;
+        }
+        .result-item {
+            text-align: center;
+        }
+        .result-item .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #1d5b6e;
+            font-weight: 600;
+        }
+        .result-item .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #08303e;
+            line-height: 1.2;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        .result-item .value.mode-list {
+            font-size: 1.2rem;
+        }
+        .placeholder {
+            color: #6f9aaa;
+            font-weight: 400;
+            font-size: 1rem;
+        }
+        .error {
+            color: #b13e4b;
+            background: #fde8eb;
+            padding: 12px 18px;
+            border-radius: 40px;
+            margin-top: 16px;
+            font-weight: 500;
+            display: none;
+            border-left: 4px solid #b13e4b;
+        }
+        .error.show {
+            display: block;
+        }
+        @media (max-width: 480px) {
+            .card { padding: 28px 18px; }
+            .results { grid-template-columns: 1fr; gap: 18px; }
+            .btn { width: 100%; justify-content: center; }
+            .input-area { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>
+        📊 Calculator
+        <small>Mean · Median · Mode</small>
+    </h1>
+    <div class="sub">Paste or type your numbers below — separated by commas, spaces, or both.</div>
+
+    <label for="numberInput">Enter your data set</label>
+    <div class="input-area">
+        <textarea id="numberInput" rows="3" placeholder="e.g.  12, 18, 25, 30, 18, 42">12, 18, 25, 30, 18, 42</textarea>
+        <button class="btn" id="calcBtn">Calculate →</button>
+    </div>
+    <p class="hint">✨ Supports integers &amp; decimals. Extra spaces and line breaks are fine.</p>
+
+    <div id="errorBox" class="error"></div>
+
+    <div class="results" id="resultsPanel">
+        <div class="result-item">
+            <div class="label">Mean (average)</div>
+            <div class="value" id="meanDisplay">—</div>
+        </div>
+        <div class="result-item">
+            <div class="label">Median</div>
+            <div class="value" id="medianDisplay">—</div>
+        </div>
+        <div class="result-item">
+            <div class="label">Mode</div>
+            <div class="value mode-list" id="modeDisplay">—</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const inputEl = document.getElementById('numberInput');
+        const calcBtn = document.getElementById('calcBtn');
+        const meanEl = document.getElementById('meanDisplay');
+        const medianEl = document.getElementById('medianDisplay');
+        const modeEl = document.getElementById('modeDisplay');
+        const errorBox = document.getElementById('errorBox');
+
+        function parseNumbers(text) {
+            // split by commas, spaces, or newlines; filter out empty strings
+            const raw = text.split(/[\s,]+/).filter(s => s.trim() !== '');
+            const nums = [];
+            for (let s of raw) {
+                const num = parseFloat(s.trim());
+                if (!isNaN(num)) nums.push(num);
+            }
+            return nums;
+        }
+
+        function calculateMean(arr) {
+            if (arr.length === 0) return null;
+            const sum = arr.reduce((a, b) => a + b, 0);
+            return sum / arr.length;
+        }
+
+        function calculateMedian(arr) {
+            if (arr.length === 0) return null;
+            const sorted = [...arr].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            if (sorted.length % 2 === 1) {
+                return sorted[mid];
+            } else {
+                return (sorted[mid - 1] + sorted[mid]) / 2;
+            }
+        }
+
+        function calculateModes(arr) {
+            if (arr.length === 0) return null;
+            const freq = new Map();
+            for (let num of arr) {
+                freq.set(num, (freq.get(num) || 0) + 1);
+            }
+            let maxFreq = 0;
+            for (let count of freq.values()) {
+                if (count > maxFreq) maxFreq = count;
+            }
+            if (maxFreq === 1) return []; // no repeated values → no mode
+            const modes = [];
+            for (let [num, count] of freq.entries()) {
+                if (count === maxFreq) modes.push(num);
+            }
+            return modes.sort((a, b) => a - b);
+        }
+
+        function formatNumber(n) {
+            if (n === null || n === undefined) return '—';
+            // if it's a whole number, show no decimals; otherwise show up to 4 decimals
+            if (Number.isInteger(n)) return n.toString();
+            return parseFloat(n.toFixed(6)).toString(); // remove trailing zeros
+        }
+
+        function updateResults() {
+            const rawText = inputEl.value;
+            const numbers = parseNumbers(rawText);
+
+            // Clear previous error
+            errorBox.classList.remove('show');
+            errorBox.textContent = '';
+
+            if (numbers.length === 0) {
+                meanEl.textContent = '—';
+                medianEl.textContent = '—';
+                modeEl.textContent = '—';
+                errorBox.textContent = '⚠️ Please enter at least one valid number.';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            // Mean
+            const mean = calculateMean(numbers);
+            meanEl.textContent = formatNumber(mean);
+
+            // Median
+            const median = calculateMedian(numbers);
+            medianEl.textContent = formatNumber(median);
+
+            // Mode
+            const modes = calculateModes(numbers);
+            if (modes === null) {
+                modeEl.textContent = '—';
+            } else if (modes.length === 0) {
+                modeEl.textContent = 'No mode (all unique)';
+            } else {
+                // show all modes, separated by commas
+                const modeStr = modes.map(m => formatNumber(m)).join(', ');
+                modeEl.textContent = modeStr;
+                // if more than 2 modes, reduce font size via class? Already set.
+            }
+        }
+
+        // Initial calculation with default example
+        updateResults();
+
+        // Event listeners
+        calcBtn.addEventListener('click', updateResults);
+
+        // Also recalculate on Ctrl+Enter (Cmd+Enter)
+        inputEl.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                updateResults();
+            }
+        });
+
+        // Optional: auto-calculate on blur (when user leaves the textarea)
+        inputEl.addEventListener('blur', updateResults);
+    })();
+</script>
+</body>
+</html>
