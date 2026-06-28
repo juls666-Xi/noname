@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research Calculator – Respondents & Averages</title>
+    <style>
+        /* ── Reset & base ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f6f8fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            color: #1a2634;
+        }
+
+        /* ── Main card ── */
+        .app {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.10);
+            padding: 32px 36px 40px;
+            transition: all 0.2s;
+        }
+        @media (max-width: 700px) {
+            .app {
+                padding: 20px 16px 28px;
+                border-radius: 18px;
+            }
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px 20px;
+            margin-bottom: 28px;
+        }
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #0b1a2b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left h1 span {
+            background: #eef3ff;
+            color: #2b6ed3;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 2px 14px;
+            border-radius: 40px;
+            letter-spacing: 0;
+        }
+        .header-left p {
+            font-size: 15px;
+            color: #5b6e84;
+            margin-top: 4px;
+        }
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #f0f3f8;
+            color: #1e2c3c;
+            text-decoration: none;
+            line-height: 1;
+        }
+        .btn:hover {
+            background: #e3e8f0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: #1d4ed8;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1a43b8;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25);
+        }
+        .btn-success {
+            background: #0b9f6b;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #09875a;
+            box-shadow: 0 6px 16px rgba(11, 159, 107, 0.25);
+        }
+        .btn-danger {
+            background: #e03a4a;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #c92f3e;
+            box-shadow: 0 6px 16px rgba(224, 58, 74, 0.20);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #d0d8e3;
+        }
+        .btn-outline:hover {
+            background: #f0f4fc;
+            border-color: #b0bcca;
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+        .btn-icon {
+            padding: 8px 12px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* ── Stats bar ── */
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px 36px;
+            background: #f8faff;
+            border-radius: 18px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            border: 1px solid #e9edf4;
+        }
+        .stat-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .stat-item .label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #5b6e84;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .stat-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0b1a2b;
+        }
+        .stat-item .value.accent {
+            color: #1d4ed8;
+        }
+        .stat-item .value.green {
+            color: #0b9f6b;
+        }
+        .stat-item .value.orange {
+            color: #d97a1a;
+        }
+
+        /* ── Table wrapper ── */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid #e6ebf2;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        /* ── Table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 480px;
+        }
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: center;
+            border-bottom: 1px solid #edf1f7;
+            border-right: 1px solid #edf1f7;
+        }
+        th:last-child,
+        td:last-child {
+            border-right: none;
+        }
+        thead th {
+            background: #f8faff;
+            font-weight: 600;
+            color: #1e2c3c;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            padding: 14px 10px;
+        }
+        thead th .q-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        thead th .q-label .del-btn {
+            opacity: 0.3;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #a0aebd;
+            transition: opacity 0.15s;
+            padding: 0 2px;
+        }
+        thead th .q-label .del-btn:hover {
+            opacity: 1;
+            color: #e03a4a;
+        }
+
+        .row-label {
+            font-weight: 600;
+            color: #1e2c3c;
+            background: #fafcff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-width: 120px;
+        }
+        .row-label .del-btn {
+            opacity: 0.25;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #a0aebd;
+            transition: opacity 0.15s;
+            padding: 0 2px;
+        }
+        .row-label .del-btn:hover {
+            opacity: 1;
+            color: #e03a4a;
+        }
+
+        /* ── Input cells ── */
+        .cell-input {
+            width: 64px;
+            padding: 8px 4px;
+            text-align: center;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #0b1a2b;
+            background: #ffffff;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+            font-family: inherit;
+        }
+        .cell-input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+        }
+        .cell-input:hover {
+            border-color: #b0c4db;
+        }
+        .cell-input::placeholder {
+            color: #b8c5d4;
+            font-weight: 400;
+            font-size: 13px;
+        }
+
+        /* ── Average cells ── */
+        .avg-cell {
+            font-weight: 700;
+            font-size: 15px;
+            background: #f4f9ff;
+            color: #1a3f7a;
+            border-bottom: 1px solid #dce4ef;
+        }
+        .avg-cell.row-avg {
+            background: #f2f6fe;
+            min-width: 70px;
+        }
+        .avg-cell.col-avg {
+            background: #f0f6fd;
+            font-weight: 600;
+        }
+        .avg-cell.grand-avg {
+            background: #e3edfe;
+            font-weight: 800;
+            font-size: 16px;
+            color: #0b2b6b;
+        }
+        .avg-cell .empty-msg {
+            font-weight: 400;
+            color: #95a9c0;
+            font-size: 13px;
+        }
+
+        /* ── Footer row (column averages) ── */
+        tfoot td {
+            background: #fafdff;
+            font-weight: 600;
+            color: #1a3f7a;
+            padding: 14px 10px;
+            border-bottom: none;
+            border-top: 2px solid #dce4ef;
+        }
+        tfoot .col-avg-label {
+            font-weight: 600;
+            color: #2b4a7a;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #7a8fa5;
+        }
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.6;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2b4058;
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1a2a3e;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            background: #0b9f6b;
+        }
+        .toast.error {
+            background: #c92f3e;
+        }
+
+        /* ── Responsive tweaks ── */
+        @media (max-width: 700px) {
+            .header-left h1 {
+                font-size: 20px;
+                flex-wrap: wrap;
+            }
+            .header-left h1 span {
+                font-size: 13px;
+                padding: 0 12px;
+            }
+            .header-left p {
+                font-size: 14px;
+            }
+            .btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            .stats-bar {
+                padding: 12px 16px;
+                gap: 12px 20px;
+            }
+            .stat-item .value {
+                font-size: 17px;
+            }
+            .cell-input {
+                width: 52px;
+                padding: 6px 2px;
+                font-size: 14px;
+            }
+            th,
+            td {
+                padding: 8px 6px;
+            }
+            .row-label {
+                min-width: 80px;
+                font-size: 13px;
+            }
+            .app {
+                padding: 16px 10px 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            .header-actions .btn span {
+                display: none;
+            }
+            .cell-input {
+                width: 44px;
+                font-size: 13px;
+                padding: 4px 2px;
+            }
+            .stats-bar {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app" id="app">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>
+                    📊 Research Calculator
+                    <span>v1</span>
+                </h1>
+                <p>Respondents × Questions · Averages per row, column &amp; overall</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-success" id="addRespondentBtn">
+                    <span>➕</span> <span>Add respondent</span>
+                </button>
+                <button class="btn btn-primary" id="addQuestionBtn">
+                    <span>➕</span> <span>Add question</span>
+                </button>
+                <button class="btn btn-outline btn-sm" id="resetBtn">
+                    <span>⟳</span> <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item">
+                <span class="label">Respondents</span>
+                <span class="value" id="respondentCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">Questions</span>
+                <span class="value" id="questionCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">Overall average</span>
+                <span class="value accent" id="grandAverage">—</span>
+            </div>
+            <div class="stat-item">
+                <span class="label">Responses</span>
+                <span class="value green" id="responseCount">0</span>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+            <table id="dataTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+                <tfoot id="tableFoot"></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── State ────────────────────────────────────────────────
+            const state = {
+                respondents: ['Respondent 1', 'Respondent 2'],
+                questions: ['Question 1', 'Question 2', 'Question 3'],
+                // responses[respondent][question] = number | null
+                responses: {}
+            };
+
+            // ─── DOM refs ─────────────────────────────────────────────
+            const $ = (id) => document.getElementById(id);
+            const thead = $('tableHead');
+            const tbody = $('tableBody');
+            const tfoot = $('tableFoot');
+            const respondentCount = $('respondentCount');
+            const questionCount = $('questionCount');
+            const grandAverage = $('grandAverage');
+            const responseCount = $('responseCount');
+            const toastEl = $('toast');
+
+            let toastTimer = null;
+
+            // ─── Helpers ──────────────────────────────────────────────
+            function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+
+            function isNumeric(val) {
+                return val !== null && val !== '' && !isNaN(parseFloat(val)) && isFinite(val);
+            }
+
+            function parseScore(val) {
+                if (val === null || val === undefined || val === '') return null;
+                const n = parseFloat(val);
+                return isNaN(n) ? null : clamp(n, 0, 100);
+            }
+
+            function safeAvg(arr) {
+                const nums = arr.filter(v => v !== null && v !== undefined && !isNaN(v));
+                if (nums.length === 0) return null;
+                return nums.reduce((a, b) => a + b, 0) / nums.length;
+            }
+
+            // ─── Initialize responses ──────────────────────────────
+            function initResponses() {
+                const r = {};
+                state.respondents.forEach(resp => {
+                    r[resp] = {};
+                    state.questions.forEach(q => {
+                        r[resp][q] = null;
+                    });
+                });
+                state.responses = r;
+            }
+
+            // ─── Render ──────────────────────────────────────────────
+            function render() {
+                // Ensure response object matches current respondents & questions
+                const resp = state.responses;
+                state.respondents.forEach(r => {
+                    if (!resp[r]) resp[r] = {};
+                    state.questions.forEach(q => {
+                        if (!(q in resp[r])) resp[r][q] = null;
+                    });
+                    // remove stale questions
+                    Object.keys(resp[r]).forEach(q => {
+                        if (!state.questions.includes(q)) delete resp[r][q];
+                    });
+                });
+                // remove stale respondents
+                Object.keys(resp).forEach(r => {
+                    if (!state.respondents.includes(r)) delete resp[r];
+                });
+
+                // ── Build header ──
+                let headHtml = '<tr><th style="text-align:left;padding-left:16px;">Respondent</th>';
+                state.questions.forEach((q, idx) => {
+                    headHtml += `<th>
+                                <div class="q-label">
+                                    <span>${escHtml(q)}</span>
+                                    <button class="del-btn" data-action="delQuestion" data-index="${idx}" title="Remove question">✕</button>
+                                </div>
+                            </th>`;
+                });
+                headHtml += `<th style="min-width:70px;">Avg</th></tr>`;
+                thead.innerHTML = headHtml;
+
+                // ── Build body ──
+                let bodyHtml = '';
+                const rowAverages = [];
+                let totalResponses = 0;
+
+                state.respondents.forEach((resp, ri) => {
+                    const row = state.responses[resp] || {};
+                    const scores = state.questions.map(q => {
+                        const val = row[q];
+                        return isNumeric(val) ? parseFloat(val) : null;
+                    });
+                    const avg = safeAvg(scores);
+                    rowAverages.push(avg);
+
+                    // count non-null responses
+                    scores.forEach(s => { if (s !== null) totalResponses++; });
+
+                    bodyHtml += `<tr>
+                                <td style="text-align:left;padding-left:12px;">
+                                    <div class="row-label">
+                                        <span>${escHtml(resp)}</span>
+                                        <button class="del-btn" data-action="delRespondent" data-index="${ri}" title="Remove respondent">✕</button>
+                                    </div>
+                                </td>`;
+                    state.questions.forEach((q, qi) => {
+                        const val = row[q];
+                        const display = isNumeric(val) ? val : '';
+                        bodyHtml += `<td>
+                                    <input class="cell-input" type="number" step="0.1" min="0" max="100"
+                                        data-respondent="${escHtml(resp)}"
+                                        data-question="${escHtml(q)}"
+                                        value="${display}"
+                                        placeholder="—"
+                                        autocomplete="off"
+                                    />
+                                </td>`;
+                    });
+                    const avgDisplay = avg !== null ? avg.toFixed(1) : '—';
+                    bodyHtml += `<td class="avg-cell row-avg">${avgDisplay}</td>`;
+                    bodyHtml += `</tr>`;
+                });
+                tbody.innerHTML = bodyHtml;
+
+                // ── Build footer (column averages) ──
+                let footHtml = `<tr><td class="col-avg-label" style="text-align:left;padding-left:16px;">Avg</td>`;
+                const colAverages = [];
+                state.questions.forEach((q, qi) => {
+                    const colScores = state.respondents.map(r => {
+                        const val = state.responses[r]?.[q];
+                        return isNumeric(val) ? parseFloat(val) : null;
+                    });
+                    const avg = safeAvg(colScores);
+                    colAverages.push(avg);
+                    const display = avg !== null ? avg.toFixed(1) : '—';
+                    footHtml += `<td class="avg-cell col-avg">${display}</td>`;
+                });
+                // grand average
+                const allScores = [];
+                state.respondents.forEach(r => {
+                    state.questions.forEach(q => {
+                        const val = state.responses[r]?.[q];
+                        if (isNumeric(val)) allScores.push(parseFloat(val));
+                    });
+                });
+                const grand = safeAvg(allScores);
+                const grandDisplay = grand !== null ? grand.toFixed(1) : '—';
+                footHtml += `<td class="avg-cell grand-avg">${grandDisplay}</td>`;
+                footHtml += `</tr>`;
+                tfoot.innerHTML = footHtml;
+
+                // ── Update stats ──
+                respondentCount.textContent = state.respondents.length;
+                questionCount.textContent = state.questions.length;
+                grandAverage.textContent = grand !== null ? grand.toFixed(1) : '—';
+                responseCount.textContent = totalResponses;
+
+                // ── Attach events ──
+                attachEvents();
+
+                // ── Auto-save to localStorage ──
+                saveState();
+            }
+
+            // ─── Event attachment ──────────────────────────────────
+            function attachEvents() {
+                // Input changes
+                document.querySelectorAll('.cell-input').forEach(input => {
+                    // Remove old listener to avoid duplicates (we use a fresh render each time)
+                    input.removeEventListener('input', handleInput);
+                    input.addEventListener('input', handleInput);
+                });
+
+                // Delete question buttons
+                document.querySelectorAll('[data-action="delQuestion"]').forEach(btn => {
+                    btn.removeEventListener('click', handleDelQuestion);
+                    btn.addEventListener('click', handleDelQuestion);
+                });
+
+                // Delete respondent buttons
+                document.querySelectorAll('[data-action="delRespondent"]').forEach(btn => {
+                    btn.removeEventListener('click', handleDelRespondent);
+                    btn.addEventListener('click', handleDelRespondent);
+                });
+            }
+
+            // ─── Input handler ──────────────────────────────────────
+            function handleInput(e) {
+                const input = e.target;
+                const resp = input.dataset.respondent;
+                const q = input.dataset.question;
+                if (!resp || !q) return;
+
+                let val = input.value.trim();
+                if (val === '') {
+                    state.responses[resp][q] = null;
+                } else {
+                    const num = parseFloat(val);
+                    if (!isNaN(num)) {
+                        state.responses[resp][q] = clamp(num, 0, 100);
+                        // re-format to show clean value
+                        input.value = state.responses[resp][q];
+                    } else {
+                        // invalid – keep as-is but don't store
+                        return;
+                    }
+                }
+                render();
+            }
+
+            // ─── Delete question ────────────────────────────────────
+            function handleDelQuestion(e) {
+                const idx = parseInt(e.currentTarget.dataset.index, 10);
+                if (isNaN(idx) || idx < 0 || idx >= state.questions.length) return;
+                if (state.questions.length <= 1) {
+                    showToast('Need at least one question.', 'error');
+                    return;
+                }
+                const q = state.questions[idx];
+                state.questions.splice(idx, 1);
+                // Remove from responses
+                state.respondents.forEach(r => {
+                    if (state.responses[r]) delete state.responses[r][q];
+                });
+                showToast(`Removed “${q}”`, 'success');
+                render();
+            }
+
+            // ─── Delete respondent ──────────────────────────────────
+            function handleDelRespondent(e) {
+                const idx = parseInt(e.currentTarget.dataset.index, 10);
+                if (isNaN(idx) || idx < 0 || idx >= state.respondents.length) return;
+                if (state.respondents.length <= 1) {
+                    showToast('Need at least one respondent.', 'error');
+                    return;
+                }
+                const r = state.respondents[idx];
+                state.respondents.splice(idx, 1);
+                delete state.responses[r];
+                showToast(`Removed “${r}”`, 'success');
+                render();
+            }
+
+            // ─── Add respondent ─────────────────────────────────────
+            function addRespondent() {
+                const base = 'Respondent';
+                let num = 1;
+                const existing = new Set(state.respondents);
+                while (existing.has(`${base} ${num}`)) num++;
+                const name = `${base} ${num}`;
+                state.respondents.push(name);
+                state.responses[name] = {};
+                state.questions.forEach(q => { state.responses[name][q] = null; });
+                showToast(`Added “${name}”`, 'success');
+                render();
+            }
+
+            // ─── Add question ──────────────────────────────────────
+            function addQuestion() {
+                const base = 'Question';
+                let num = 1;
+                const existing = new Set(state.questions);
+                while (existing.has(`${base} ${num}`)) num++;
+                const name = `${base} ${num}`;
+                state.questions.push(name);
+                state.respondents.forEach(r => {
+                    state.responses[r][name] = null;
+                });
+                showToast(`Added “${name}”`, 'success');
+                render();
+            }
+
+            // ─── Reset ──────────────────────────────────────────────
+            function resetAll() {
+                if (!confirm('Reset all data? This will clear all scores.')) return;
+                state.respondents = ['Respondent 1', 'Respondent 2'];
+                state.questions = ['Question 1', 'Question 2', 'Question 3'];
+                initResponses();
+                showToast('Reset complete', 'success');
+                render();
+            }
+
+            // ─── Toast ──────────────────────────────────────────────
+            function showToast(msg, type = 'success') {
+                toastEl.textContent = msg;
+                toastEl.className = 'toast ' + type;
+                // force reflow
+                void toastEl.offsetWidth;
+                toastEl.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toastEl.classList.remove('show');
+                }, 2200);
+            }
+
+            // ─── Escape HTML ──────────────────────────────────────
+            function escHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ─── localStorage ──────────────────────────────────────
+            function saveState() {
+                try {
+                    const data = {
+                        respondents: state.respondents,
+                        questions: state.questions,
+                        responses: state.responses
+                    };
+                    localStorage.setItem('researchCalcData', JSON.stringify(data));
+                } catch (_) { /* ignore */ }
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem('researchCalcData');
+                    if (!raw) return false;
+                    const data = JSON.parse(raw);
+                    if (!data.respondents || !data.questions || !data.responses) return false;
+                    state.respondents = data.respondents;
+                    state.questions = data.questions;
+                    state.responses = data.responses;
+                    return true;
+                } catch (_) { return false; }
+            }
+
+            // ─── Init ──────────────────────────────────────────────
+            function init() {
+                const loaded = loadState();
+                if (!loaded) {
+                    initResponses();
+                } else {
+                    // ensure all respondents have all questions
+                    state.respondents.forEach(r => {
+                        if (!state.responses[r]) state.responses[r] = {};
+                        state.questions.forEach(q => {
+                            if (!(q in state.responses[r])) state.responses[r][q] = null;
+                        });
+                    });
+                }
+                render();
+
+                // Button events
+                $('addRespondentBtn').addEventListener('click', addRespondent);
+                $('addQuestionBtn').addEventListener('click', addQuestion);
+                $('resetBtn').addEventListener('click', resetAll);
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        addRespondent();
+                    }
+                    if (e.key === 'q' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        addQuestion();
+                    }
+                });
+            }
+
+            // ─── Go ──────────────────────────────────────────────────
+            init();
+
+        })();
+    </script>
+
+</body>
+</html>
