@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Morse Code Translator</title>
+    <style>
+        /* ----- Reset & base ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 30% 20%, #1a2a3a, #0b1219);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 820px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 42px;
+            padding: 36px 40px 44px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: 0.3s;
+        }
+
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #eef5ff;
+            font-weight: 600;
+            font-size: 28px;
+            letter-spacing: -0.3px;
+            margin-bottom: 28px;
+        }
+        h1 span {
+            background: rgba(100, 200, 255, 0.13);
+            padding: 6px 14px;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #8bc9ff;
+            letter-spacing: 0.3px;
+            border: 1px solid rgba(100, 200, 255, 0.15);
+        }
+
+        /* ----- Tabs ----- */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.30);
+            border-radius: 60px;
+            padding: 5px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 10px;
+            border: none;
+            background: transparent;
+            color: #9bb5d4;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.25s;
+            letter-spacing: 0.2px;
+        }
+        .tab-btn.active {
+            background: #2e4b6a;
+            color: #f0f8ff;
+            box-shadow: 0 4px 14px rgba(0, 120, 255, 0.20);
+        }
+        .tab-btn:hover:not(.active) {
+            color: #d0e4ff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ----- Panels ----- */
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            padding: 18px 20px;
+            background: rgba(10, 18, 28, 0.70);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            color: #e8f0fe;
+            font-size: 17px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            resize: vertical;
+            outline: none;
+            transition: 0.25s;
+            line-height: 1.6;
+            letter-spacing: 0.2px;
+        }
+        textarea:focus {
+            border-color: rgba(80, 180, 255, 0.35);
+            box-shadow: 0 0 0 4px rgba(80, 180, 255, 0.07);
+            background: rgba(10, 18, 28, 0.85);
+        }
+        textarea::placeholder {
+            color: #5d7b9a;
+            font-weight: 300;
+            letter-spacing: 0.2px;
+        }
+
+        .output-area {
+            position: relative;
+            margin-top: 6px;
+        }
+        .output-area textarea {
+            background: rgba(10, 18, 28, 0.45);
+            color: #c8defa;
+            cursor: default;
+        }
+        .output-area textarea:focus {
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: #99bcdd;
+            padding: 7px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.13);
+            color: #dceaff;
+        }
+        .copy-btn.copied {
+            background: rgba(60, 200, 120, 0.20);
+            color: #80e8b0;
+            border-color: rgba(60, 200, 120, 0.20);
+        }
+
+        /* ----- Controls row ----- */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0 22px;
+            align-items: center;
+        }
+        .controls .left {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #c0d8f0;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .btn-primary {
+            background: #2a6b9e;
+            color: #fff;
+            border-color: rgba(80, 180, 255, 0.20);
+        }
+        .btn-primary:hover {
+            background: #357bb3;
+            box-shadow: 0 6px 20px rgba(40, 140, 255, 0.20);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.10);
+        }
+        .btn-danger {
+            background: rgba(200, 70, 70, 0.15);
+            color: #f0b0b0;
+            border-color: rgba(200, 70, 70, 0.15);
+        }
+        .btn-danger:hover {
+            background: rgba(200, 70, 70, 0.25);
+        }
+        .btn-icon {
+            padding: 10px 16px;
+            font-size: 18px;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .badge {
+            font-size: 13px;
+            color: #7a9fc9;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+
+        /* ----- Audio indicator ----- */
+        .audio-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #7a9fc9;
+        }
+        .audio-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #3a6a8a;
+            transition: 0.25s;
+        }
+        .audio-indicator .dot.playing {
+            background: #50d080;
+            box-shadow: 0 0 14px rgba(80, 208, 128, 0.4);
+            animation: pulse-dot 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-dot {
+            from {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            to {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        /* ----- Character counter ----- */
+        .char-counter {
+            text-align: right;
+            font-size: 13px;
+            color: #5b7d9e;
+            margin-top: 8px;
+            letter-spacing: 0.2px;
+        }
+
+        /* ----- Error state ----- */
+        .error-msg {
+            color: #f0a0a0;
+            background: rgba(200, 70, 70, 0.10);
+            padding: 10px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            margin-top: 10px;
+            border: 1px solid rgba(200, 70, 70, 0.10);
+            display: none;
+        }
+        .error-msg.show {
+            display: block;
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 580px) {
+            .container {
+                padding: 24px 18px 30px;
+                border-radius: 28px;
+            }
+            h1 {
+                font-size: 22px;
+                flex-wrap: wrap;
+            }
+            textarea {
+                font-size: 15px;
+                min-height: 100px;
+                padding: 14px 16px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls .left {
+                flex-direction: column;
+            }
+            .btn {
+                justify-content: center;
+                padding: 12px 18px;
+            }
+            .copy-btn {
+                top: 10px;
+                right: 12px;
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            .tab-btn {
+                font-size: 13px;
+                padding: 10px 6px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 16px 12px 22px;
+            }
+            textarea {
+                font-size: 14px;
+                min-height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" role="main">
+
+        <h1>
+            ⌨️ Morse Code
+            <span>translator</span>
+        </h1>
+
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
+            <button class="tab-btn active" data-tab="toMorse" role="tab">Text → Morse</button>
+            <button class="tab-btn" data-tab="fromMorse" role="tab">Morse → Text</button>
+        </div>
+
+        <!-- Panel: Text → Morse -->
+        <div class="panel active" id="panel-toMorse" role="tabpanel">
+            <textarea id="inputText" placeholder="Type your message here…" spellcheck="true">Hello world</textarea>
+            <div class="char-counter"><span id="charCount">11</span> characters</div>
+
+            <div class="controls">
+                <div class="left">
+                    <button class="btn btn-primary" id="translateToMorseBtn">🔊 Translate</button>
+                    <button class="btn btn-secondary" id="clearToMorseBtn">✕ Clear</button>
+                    <button class="btn btn-secondary" id="playToMorseBtn">▶ Play</button>
+                </div>
+                <span class="badge" id="morseStats">—</span>
+            </div>
+
+            <div class="output-area">
+                <textarea id="outputMorse" readonly placeholder="Morse code will appear here…"></textarea>
+                <button class="copy-btn" id="copyMorseBtn" title="Copy Morse code">Copy</button>
+            </div>
+            <div class="error-msg" id="errorToMorse"></div>
+        </div>
+
+        <!-- Panel: Morse → Text -->
+        <div class="panel" id="panel-fromMorse" role="tabpanel">
+            <textarea id="inputMorse" placeholder="Enter Morse code (use . and -)…" spellcheck="false">.... . .-.. .-.. ---</textarea>
+            <div class="char-counter"><span id="morseCharCount">19</span> symbols</div>
+
+            <div class="controls">
+                <div class="left">
+                    <button class="btn btn-primary" id="translateToTextBtn">🔊 Translate</button>
+                    <button class="btn btn-secondary" id="clearFromMorseBtn">✕ Clear</button>
+                </div>
+                <span class="badge" id="textStats">—</span>
+            </div>
+
+            <div class="output-area">
+                <textarea id="outputText" readonly placeholder="Decoded text will appear here…"></textarea>
+                <button class="copy-btn" id="copyTextBtn" title="Copy decoded text">Copy</button>
+            </div>
+            <div class="error-msg" id="errorFromMorse"></div>
+        </div>
+
+        <!-- Audio indicator -->
+        <div class="audio-indicator" style="margin-top: 20px; justify-content: flex-end;">
+            <span class="dot" id="audioDot"></span>
+            <span id="audioStatus">Ready</span>
+        </div>
+
+    </div>
+
+    <script>
+        // --------------------------------------------------------------
+        //  MORSE CODE DICTIONARY
+        // --------------------------------------------------------------
+        const MORSE_MAP = {
+            'A': '.-',
+            'B': '-...',
+            'C': '-.-.',
+            'D': '-..',
+            'E': '.',
+            'F': '..-.',
+            'G': '--.',
+            'H': '....',
+            'I': '..',
+            'J': '.---',
+            'K': '-.-',
+            'L': '.-..',
+            'M': '--',
+            'N': '-.',
+            'O': '---',
+            'P': '.--.',
+            'Q': '--.-',
+            'R': '.-.',
+            'S': '...',
+            'T': '-',
+            'U': '..-',
+            'V': '...-',
+            'W': '.--',
+            'X': '-..-',
+            'Y': '-.--',
+            'Z': '--..',
+            '0': '-----',
+            '1': '.----',
+            '2': '..---',
+            '3': '...--',
+            '4': '....-',
+            '5': '.....',
+            '6': '-....',
+            '7': '--...',
+            '8': '---..',
+            '9': '----.',
+            '.': '.-.-.-',
+            ',': '--..--',
+            '?': '..--..',
+            "'": '.----.',
+            '!': '-.-.--',
+            '/': '-..-.',
+            '(': '-.--.',
+            ')': '-.--.-',
+            '&': '.-...',
+            ':': '---...',
+            ';': '-.-.-.',
+            '=': '-...-',
+            '+': '.-.-.',
+            '-': '-....-',
+            '_': '..--.-',
+            '"': '.-..-.',
+            '$': '...-..-',
+            '@': '.--.-.',
+            ' ': ' ' // space
+        };
+
+        // Reverse map (Morse → character)
+        const REVERSE_MORSE = Object.fromEntries(
+            Object.entries(MORSE_MAP).map(([k, v]) => [v, k])
+        );
+
+        // --------------------------------------------------------------
+        //  DOM REFS
+        // --------------------------------------------------------------
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = {
+            toMorse: document.getElementById('panel-toMorse'),
+            fromMorse: document.getElementById('panel-fromMorse'),
+        };
+        const inputText = document.getElementById('inputText');
+        const outputMorse = document.getElementById('outputMorse');
+        const inputMorse = document.getElementById('inputMorse');
+        const outputText = document.getElementById('outputText');
+        const charCount = document.getElementById('charCount');
+        const morseCharCount = document.getElementById('morseCharCount');
+        const errorToMorse = document.getElementById('errorToMorse');
+        const errorFromMorse = document.getElementById('errorFromMorse');
+        const morseStats = document.getElementById('morseStats');
+        const textStats = document.getElementById('textStats');
+        const audioDot = document.getElementById('audioDot');
+        const audioStatus = document.getElementById('audioStatus');
+
+        const translateToMorseBtn = document.getElementById('translateToMorseBtn');
+        const clearToMorseBtn = document.getElementById('clearToMorseBtn');
+        const playToMorseBtn = document.getElementById('playToMorseBtn');
+        const copyMorseBtn = document.getElementById('copyMorseBtn');
+        const translateToTextBtn = document.getElementById('translateToTextBtn');
+        const clearFromMorseBtn = document.getElementById('clearFromMorseBtn');
+        const copyTextBtn = document.getElementById('copyTextBtn');
+
+        // --------------------------------------------------------------
+        //  TAB SWITCHING
+        // --------------------------------------------------------------
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                Object.keys(panels).forEach(key => {
+                    panels[key].classList.toggle('active', key === tab);
+                });
+                // Clear errors
+                errorToMorse.classList.remove('show');
+                errorFromMorse.classList.remove('show');
+                // Update counters
+                updateCounts();
+            });
+        });
+
+        // --------------------------------------------------------------
+        //  COUNTERS
+        // --------------------------------------------------------------
+        function updateCounts() {
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (!activeTab) return;
+            const tab = activeTab.dataset.tab;
+            if (tab === 'toMorse') {
+                const raw = inputText.value;
+                const visible = raw.replace(/\n/g, ' ');
+                charCount.textContent = visible.length;
+            } else {
+                const raw = inputMorse.value;
+                const cleaned = raw.replace(/\s+/g, ' ').trim();
+                const symbols = cleaned ? cleaned.split(/\s+/).length : 0;
+                morseCharCount.textContent = symbols;
+            }
+        }
+
+        inputText.addEventListener('input', updateCounts);
+        inputMorse.addEventListener('input', updateCounts);
+
+        // --------------------------------------------------------------
+        //  TRANSLATE: Text → Morse
+        // --------------------------------------------------------------
+        function textToMorse(text) {
+            const upper = text.toUpperCase();
+            let result = [];
+            let unknown = [];
+
+            for (let i = 0; i < upper.length; i++) {
+                const ch = upper[i];
+                if (ch === '\n' || ch === '\r') continue; // ignore newlines
+                if (ch === ' ') {
+                    // If previous char was also space, we need to preserve word spacing
+                    // We'll handle spaces as word separators: single space = char gap, multiple = word gap
+                    // But we'll just use a single space between letters and ' / ' between words
+                    result.push(' ');
+                    continue;
+                }
+                const morse = MORSE_MAP[ch];
+                if (morse) {
+                    result.push(morse);
+                } else if (ch !== ' ') {
+                    unknown.push(ch);
+                }
+            }
+
+            // Clean up spaces: replace multiple spaces with ' / ' for word separation
+            // but we want to preserve the idea that spaces separate letters.
+            // Standard: letters separated by space, words separated by ' / '
+            let joined = result.join(' ');
+            // Replace runs of 2+ spaces with ' / '
+            joined = joined.replace(/\s{2,}/g, ' / ');
+            // Trim
+            joined = joined.trim();
+
+            return { morse: joined, unknown };
+        }
+
+        function translateToMorse() {
+            const text = inputText.value;
+            if (!text.trim()) {
+                outputMorse.value = '';
+                morseStats.textContent = '—';
+             
